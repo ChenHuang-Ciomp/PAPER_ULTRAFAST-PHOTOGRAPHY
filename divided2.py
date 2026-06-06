@@ -154,7 +154,7 @@ class SpectralDataset(Dataset):
         patches = self.data.unfold(2, patch_size, patch_size).unfold(3, patch_size, patch_size)
         self.data = patches.permute(2, 3, 0, 1, 4, 5).reshape(num_patches * num_patches, B, 1, patch_size, patch_size)
 
-        print(f"切割后每个 sample_n 形状: {self.data.shape}")  
+        print(f"dive sample_n shape: {self.data.shape}")  
     def __len__(self):
         return len(self.data)
     
@@ -167,7 +167,7 @@ patches = dataset.data
 
 # %% train
 for n in range(100):
-    print(f"训练第 {n+1}/100 个模型...")
+    print(f"traning {n+1}/100 th model...")
 
 
 
@@ -241,7 +241,7 @@ for n in range(100):
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
             best_model_wts = model.state_dict() 
-            print('保存最佳模型')
+            print('the best')
         
         print(f"Epoch [{epoch+1}/{num_epochs}], Training Loss: {avg_train_loss:.4f}, Validation Loss: {avg_val_loss:.4f}")
         
@@ -251,12 +251,12 @@ for n in range(100):
             break
 
     torch.save(best_model_wts, f"models4/model_{n}.pth")
-print("所有 100 个模型训练完成 ✅")
+print("all the model finished")
 
 
 
 
-patchest = patches[:, 19, :, :, :].unsqueeze(1)  # 只取一个样本 
+patchest = patches[:, 19, :, :, :].unsqueeze(1)  # one sample 
 Gmatrices = []
 for n1 in range(100):
     model = ConvTransformerNet().to(device)
@@ -271,54 +271,9 @@ for n1 in range(100):
 preds = []
 scaler_yx = joblib.load("scaler_yx.pkl")
 for Gmatrix_n in Gmatrices:
-    # 将 tensor 转换为 numpy 数组，并逆标准化
     pred_numpy = Gmatrix_n.cpu().detach().numpy()
     pred_original = scaler_yx.inverse_transform(pred_numpy)
     preds.append(pred_original) 
-# %%
 
 
-preds_numpy = np.concatenate(preds, axis=0)  
-
-
-preds_reshaped = preds_numpy.reshape(10, 10, 101)
-
-from scipy.io import savemat
-savemat("preds_reshaped.mat", {
-    "preds_reshaped": preds_reshaped,
-})
-
-
-
-
-plt.imshow(preds_reshaped[:, :, 38], cmap='viridis', vmin=0, vmax=1)  
-plt.colorbar()  
-plt.title('Channel 20')
-plt.show()
-
-
-
-actuals = dataset.labels
-actuals = actuals.cpu().detach().numpy()
-actuals_original = scaler_yx.inverse_transform(actuals)
-#actuals = np.concatenate(actuals, axis=0)
-plt.figure()
-plt.plot(actuals_original[19], label='实际光谱')
-from scipy.io import savemat
-savemat("realvalue.mat", {
-    "realvalue": actuals_original,
-})
-
-
-
-preds_numpy = np.concatenate(preds, axis=0) 
-
-min_val = np.min(preds_numpy)
-max_val = np.max(preds_numpy)
-
-if max_val > min_val: 
-    preds_numpy = (preds_numpy - min_val) / (max_val - min_val)
-
-
-preds_numpy = preds_numpy.reshape(100, 100)
 
