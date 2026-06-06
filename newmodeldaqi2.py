@@ -192,14 +192,14 @@ for epoch in range(num_epochs):
 
     if avg_val_loss < best_val_loss:
         best_val_loss = avg_val_loss
-        best_model_wts = model.state_dict()  # 保存当前最佳模型的权重
+        best_model_wts = model.state_dict()  # save the best para
         print('保存最佳模型')
     
     print(f"Epoch [{epoch+1}/{num_epochs}], Training Loss: {avg_train_loss:.4f}, Validation Loss: {avg_val_loss:.4f}")
     
 
 
-torch.save(best_model_wts, "ConvTransformerNetmodel0511.pth") # 保存模型参数
+torch.save(best_model_wts, "ConvTransformerNetmodel0511.pth") # save model parameters
 def smooth_curve(points, factor=0.9):
     smoothed = []
     for point in points:
@@ -209,17 +209,7 @@ def smooth_curve(points, factor=0.9):
             smoothed.append(point)
     return smoothed
 
-# 绘制平滑后的损失曲线
-plt.figure(figsize=(8,6))
-plt.plot(range(1, len(train_losses) + 1), smooth_curve(train_losses), label="Train Loss ")
-plt.plot(range(1, len(val_losses) + 1), smooth_curve(val_losses), label="Validation Loss ")
-plt.xlabel("Epoch")
-plt.ylabel("Loss")
-plt.title("Training and Validation Loss Curve")
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+
 
 
 loaded_model = ConvTransformerNet().to(device)
@@ -247,27 +237,8 @@ actuals = scaler_y.inverse_transform(actuals)
 mse = mean_squared_error(actuals, predictions)
 r2 = r2_score(actuals, predictions)
 mae = mean_absolute_error(actuals, predictions)
-print(f'验证集 MAE: {mae:.6f}, MSE: {mse:.6f}, R²: {r2:.6f}')
+print(f'val MAE: {mae:.6f}, MSE: {mse:.6f}, R²: {r2:.6f}')
 
 
 num_samples_to_plot = min(6, len(predictions))
-
-plt.figure(figsize=(10, 6))
-for i in range(num_samples_to_plot):
-    plt.plot(actuals[i], label=f'实际{i+1}', linestyle='-')
-    plt.plot(predictions[i], label=f'预测{i+1}', linestyle='--')
-plt.xlabel('波长索引')
-plt.ylabel('强度')
-plt.title('前6个样本的光谱预测 vs 实际')
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
-
-from scipy.io import savemat
-savemat("spectral_predictions.mat", {
-    "predictions": predictions,
-    "actuals": actuals
-})
-
 
