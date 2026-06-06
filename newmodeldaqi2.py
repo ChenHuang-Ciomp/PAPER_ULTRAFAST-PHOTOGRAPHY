@@ -215,30 +215,3 @@ def smooth_curve(points, factor=0.9):
 loaded_model = ConvTransformerNet().to(device)
 loaded_model.load_state_dict(torch.load('ConvTransformerNetmodel0511.pth'))
 loaded_model.eval()
-
-
-with torch.no_grad():
-    predictions = []
-    actuals = []
-    for inputs, targets in val_loader:
-        inputs = inputs.to(device)
-        outputs = loaded_model(inputs)
-        predictions.append(outputs.cpu().numpy())  
-        actuals.append(targets.cpu().numpy()) 
-
-    predictions = np.concatenate(predictions, axis=0)
-    actuals = np.concatenate(actuals, axis=0)
-
-
-scaler_y = joblib.load('scaler_y.pkl')
-predictions = scaler_y.inverse_transform(predictions)
-actuals = scaler_y.inverse_transform(actuals)
-
-mse = mean_squared_error(actuals, predictions)
-r2 = r2_score(actuals, predictions)
-mae = mean_absolute_error(actuals, predictions)
-print(f'val MAE: {mae:.6f}, MSE: {mse:.6f}, R²: {r2:.6f}')
-
-
-num_samples_to_plot = min(6, len(predictions))
-
